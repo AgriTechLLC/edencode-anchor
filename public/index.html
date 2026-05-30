@@ -77,6 +77,37 @@
   .dot.on { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
   .dot.off { background: var(--err); box-shadow: 0 0 8px var(--err); }
 
+  /* ----- LIVE status pill (header, both tabs) ----- */
+  .livepill {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    background: var(--panel);
+    padding: 5px 11px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+    max-width: 100%;
+    transition: color .2s ease, border-color .2s ease;
+  }
+  .livepill .live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--muted);
+    flex: 0 0 auto;
+    transition: background .2s ease, box-shadow .2s ease;
+  }
+  .livepill.live { color: var(--accent); border-color: rgba(54,211,153,.45); }
+  .livepill.live .live-dot {
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: livePulse 2s ease-in-out infinite;
+  }
+  .livepill .live-text { overflow: hidden; text-overflow: ellipsis; }
+  @keyframes livePulse { 0%,100% { opacity: .45; } 50% { opacity: 1; } }
+
   .grid-stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -456,6 +487,10 @@
       <p class="tag">Sovereign Weather Provenance</p>
     </div>
     <div class="spacer"></div>
+    <span class="livepill" id="livePill" title="Live observation feed status">
+      <span class="live-dot" id="liveDot"></span>
+      <span class="live-text" id="liveText">connecting…</span>
+    </span>
     <span class="modebadge">
       <span id="dbDot" class="dot"></span>
       <span id="modeText">mode: hashonly</span>
@@ -630,6 +665,22 @@
     if (isNaN(d.getTime())) return esc(t);
     return d.toLocaleString();
   }
+  // Compact relative time, e.g. "just now", "12s ago", "3m ago", "2h ago".
+  function relTime(t) {
+    if (!t) return "—";
+    var d = new Date(t);
+    if (isNaN(d.getTime())) return "—";
+    var sec = Math.round((Date.now() - d.getTime()) / 1000);
+    if (sec < 0) sec = 0;
+    if (sec < 5) return "just now";
+    if (sec < 60) return sec + "s ago";
+    var min = Math.floor(sec / 60);
+    if (min < 60) return min + "m ago";
+    var hr = Math.floor(min / 60);
+    if (hr < 24) return hr + "h ago";
+    var day = Math.floor(hr / 24);
+    return day + "d ago";
+  }
   async function getJSON(url, opts) {
     var r = await fetch(url, opts);
     var body = null;
@@ -650,6 +701,38 @@
       $("modeText").textContent = "mode: " + (h.mode || "hashonly");
     } catch (e) {
       $("dbDot").className = "dot off";
+    }
+  }
+
+  // ----- LIVE feed status pill (header, both tabs) -----
+  // Polls /api/metrics and shows a pulsing green "LIVE" state when the most
+  // recent observation is within ~5 minutes; otherwise a grey "idle" state.
+  var LIVE_FRESH_MS = 5 * 60 * 1000;  // observation considered "live" within 5 min
+  async function loadLiveStatus() {
+    var pill = $("livePill"), text = $("liveText");
+    try {
+      var m = await getJSON("/api/metrics");
+      var stations = (m.totals && m.totals.stations != null) ? Number(m.totals.stations) : 0;
+      var lastAt = m.latest && m.latest.lastRecordAt;
+      var lastMs = lastAt ? new Date(lastAt).getTime() : NaN;
+      var fresh = !isNaN(lastMs) && (Date.now() - lastMs) <= LIVE_FRESH_MS;
+
+      if (fresh) {
+        pill.classList.add("live");
+        pill.title = "Live feed · last observation " + fmtTime(lastAt);
+        text.textContent = "LIVE · " + stations + " station" + (stations === 1 ? "" : "s") +
+          " · last obs " + relTime(lastAt);
+      } else {
+        pill.classList.remove("live");
+        pill.title = lastAt
+          ? "Idle · last observation " + fmtTime(lastAt)
+          : "Idle · no observations recorded yet";
+        text.textContent = "no recent observations";
+      }
+    } catch (e) {
+      pill.classList.remove("live");
+      pill.title = "Live feed status unavailable";
+      text.textContent = "status unavailable";
     }
   }
 
@@ -1561,6 +1644,13 @@
 
   refreshAll();
   setInterval(refreshAll, 15000);
+
+  // ----- LIVE pill: independent ~15s poll, visible on both tabs -----
+  loadLiveStatus();
+  setInterval(loadLiveStatus, 15000);
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) loadLiveStatus();   // refresh immediately on return
+  });
 })();
 </script>
 </body>

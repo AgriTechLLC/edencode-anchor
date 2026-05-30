@@ -38,6 +38,28 @@ export async function insertPending(
 }
 
 /**
+ * Insert a live weather observation in 'pending' status, deduped on
+ * (station_id, observed_at) via the ux_weather_station_time unique index.
+ *
+ * Uses ON CONFLICT DO NOTHING so re-polling the same observation is a no-op:
+ * returns the new row id on insert, or null when a duplicate was skipped.
+ */
+export async function insertObservation(
+  stationId: number,
+  observedAt: Date,
+  data: unknown
+): Promise<number | null> {
+  const result = await pool.query<{ id: string }>(
+    `INSERT INTO weather_records (station_id, observed_at, data, status)
+     VALUES ($1, $2, $3, 'pending')
+     ON CONFLICT (station_id, observed_at) DO NOTHING
+     RETURNING id`,
+    [stationId, observedAt, JSON.stringify(data)]
+  );
+  return result.rows.length > 0 ? Number(result.rows[0].id) : null;
+}
+
+/**
  * Claim up to `limit` oldest pending records for hashing.
  *
  * Uses FOR UPDATE SKIP LOCKED so concurrent batchers never grab the same

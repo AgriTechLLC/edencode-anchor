@@ -27,15 +27,31 @@ export const config = {
       ? process.env.TEMPEST_API_KEY
       : undefined,
 
-  // Polling cadence in seconds for any external weather poller.
-  POLL_RATE: parseInt(process.env.POLL_RATE ?? '300', 10),
+  // Tempest station IDs to poll for live observations (comma-separated env,
+  // e.g. "196029,196035"). Defaults to an empty list (poller stays disabled).
+  TEMPEST_STATION_IDS: (process.env.TEMPEST_STATION_IDS ?? '')
+    .split(',')
+    .map((s) => parseInt(s.trim(), 10))
+    .filter((n) => Number.isFinite(n)),
+
+  // Polling cadence in seconds for the live weather poller.
+  POLL_RATE: parseInt(process.env.POLL_RATE ?? '60', 10),
 
   // How often (seconds) the background hash loop runs.
   BATCH_INTERVAL_SEC: parseInt(process.env.BATCH_INTERVAL_SEC ?? '30', 10),
 
   // Max records claimed per hash batch.
   MAX_BATCH: parseInt(process.env.MAX_BATCH ?? '500', 10),
+
+  // Whether the live poller should run. True only when a Tempest API key is
+  // present AND at least one station id is configured. Derived below.
+  POLL_ENABLED: false,
 };
+
+// Derived: the poller is enabled only with both a key and at least one station.
+config.POLL_ENABLED =
+  (config.TEMPEST_API_KEY?.length ?? 0) > 0 &&
+  config.TEMPEST_STATION_IDS.length > 0;
 
 /**
  * Validate required environment variables.

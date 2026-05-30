@@ -16,6 +16,7 @@ import {
 } from './db/repo';
 import { buildMerkle, merkleProof, verifyProof } from './anchor/merkle';
 import { runHashBatch, startHashLoop } from './anchor/hash-processor';
+import { startPoller, stopPoller } from './service/poller';
 
 const app = express();
 
@@ -310,6 +311,33 @@ async function main(): Promise<void> {
   startHashLoop(config.BATCH_INTERVAL_SEC);
   // eslint-disable-next-line no-console
   console.log(`Hash loop started (every ${config.BATCH_INTERVAL_SEC}s).`);
+
+  // Live observation poller (enabled only with a Tempest key + station ids).
+  // Fires its first cycle async, so it never blocks listen().
+  let pollTimer: NodeJS.Timeout | null = null;
+  if (config.POLL_ENABLED) {
+    pollTimer = startPoller();
+    // eslint-disable-next-line no-console
+    console.log(
+      `Poller started (every ${config.POLL_RATE}s) for stations: ${config.TEMPEST_STATION_IDS.join(
+        ', '
+      )}.`
+    );
+  } else {
+    // eslint-disable-next-line no-console
+    console.log('Poller disabled (no Tempest key/stations).');
+  }
+
+  // Graceful shutdown: stop the poller on termination signals.
+  const shutdown = (signal: string): void => {
+    // eslint-disable-next-line no-console
+    console.log(`Received ${signal}, shutting down poller.`);
+    stopPoller(pollTimer);
+    pollTimer = null;
+    process.exit(0);
+  };
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 
   app.listen(config.PORT, '0.0.0.0', () => {
     // eslint-disable-next-line no-console

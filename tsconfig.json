@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "outDir": "dist",
+    "rootDir": "src",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node"
+  },
+  "include": [
+    "src/server.ts",
+    "src/config/**/*",
+    "src/db/**/*",
+    "src/anchor/**/*",
+    "src/format/**/*",
+    "src/utils/**/*",
+    "src/notification/console.ts",
+    "src/notification/interface.ts",
+    "src/service/tempest.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tests",
+    "src/app.ts",
+    "src/index.ts",
+    "src/service/wallet.ts",
+    "src/service/processor.ts",
+    "src/service/monitor.ts",
+    "src/service/setup.ts",
+    "src/service/stream.ts",
+    "src/service/queue.ts",
+    "src/service/transaction.ts",
+    "src/service/tempest-websocket.ts",
+    "src/scripts/**/*",
+    "src/db/connection.ts",
+    "src/db/models/**/*"
+  ]
+}

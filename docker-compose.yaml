@@ -1,0 +1,97 @@
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:8.0
+    container_name: weather-chain-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: weather-chain
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - weather-chain-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/weather-chain --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Weather Chain Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: weather-chain-app
+    restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      # MongoDB Configuration
+      MONGO_URI: mongodb://admin:password@mongodb:27017/weather-chain?authSource=admin
+
+      # BSV Wallet Configuration
+      SERVER_PRIVATE_KEY: ${SERVER_PRIVATE_KEY:-bcc56b658e5b8660ceba47f323e8a77c4794ab9c76f2bd0082a056c723980049}
+      WALLET_STORAGE_URL: ${WALLET_STORAGE_URL:-https://store-us-1.bsvb.tech}
+      BSV_NETWORK: ${BSV_NETWORK:-test}
+
+      # Tempest API Configuration
+      TEMPEST_API_KEY: ${TEMPEST_API_KEY}
+
+      # Polling Configuration
+      POLL_RATE: ${POLL_RATE:-300}
+
+      # Funding Configuration
+      FUNDING_OUTPUT_AMOUNT: ${FUNDING_OUTPUT_AMOUNT:-1000}
+      FUNDING_BASKET_MIN: ${FUNDING_BASKET_MIN:-200}
+      FUNDING_BATCH_SIZE: ${FUNDING_BATCH_SIZE:-1000}
+
+      # Transaction Configuration
+      WEATHER_OUTPUTS_PER_TX: ${WEATHER_OUTPUTS_PER_TX:-100}
+
+      # Service Configuration
+      MONITOR_INTERVAL: ${MONITOR_INTERVAL:-60}
+      PROCESSOR_INTERVAL: ${PROCESSOR_INTERVAL:-3}
+    networks:
+      - weather-chain-network
+    # Uncomment if you need to access the app externally
+    # ports:
+    #   - "3000:3000"
+
+  # Setup Service (run once to create funding basket)
+  setup:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: weather-chain-setup
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      MONGO_URI: mongodb://admin:password@mongodb:27017/weather-chain?authSource=admin
+      SERVER_PRIVATE_KEY: ${SERVER_PRIVATE_KEY:-bcc56b658e5b8660ceba47f323e8a77c4794ab9c76f2bd0082a056c723980049}
+      WALLET_STORAGE_URL: ${WALLET_STORAGE_URL:-https://store-us-1.bsvb.tech}
+      BSV_NETWORK: ${BSV_NETWORK:-main}
+      TEMPEST_API_KEY: ${TEMPEST_API_KEY}
+      FUNDING_OUTPUT_AMOUNT: ${FUNDING_OUTPUT_AMOUNT:-1000}
+      FUNDING_BATCH_SIZE: ${FUNDING_BATCH_SIZE:-1000}
+    networks:
+      - weather-chain-network
+    command: node dist/scripts/setup-funding.js
+    profiles:
+      - setup
+
+volumes:
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
+
+networks:
+  weather-chain-network:
+    driver: bridge

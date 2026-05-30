@@ -1,0 +1,231 @@
+import path from 'path';
+import express, { Request, Response, NextFunction } from 'express';
+
+import { config, validateConfig } from './config/env';
+import { migrate } from './db/migrate';
+import {
+  getStats,
+  listRecords,
+  listBatches,
+  findByHash,
+  insertPending,
+  dbHealthy,
+} from './db/repo';
+import { runHashBatch, startHashLoop } from './anchor/hash-processor';
+
+const app = express();
+
+app.use(express.json({ limit: '1mb' }));
+
+// Lightweight request logging
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  // eslint-disable-next-line no-console
+  console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
+  next();
+});
+
+/**
+ * Wrap an async route handler so rejected promises hit the error middleware.
+ */
+function asyncHandler(
+  fn: (req: Request, res: Response, next: NextFunction) => Promise<unknown>
+) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    fn(req, res, next).catch(next);
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Health
+// ---------------------------------------------------------------------------
+app.get(
+  '/health',
+  asyncHandler(async (_req, res) => {
+    let db = false;
+    try {
+      db = await dbHealthy();
+    } catch {
+      db = false;
+    }
+    res.status(200).json({ status: 'ok', db, mode: 'hashonly' });
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Stats
+// ---------------------------------------------------------------------------
+app.get(
+  '/api/stats',
+  asyncHandler(async (_req, res) => {
+    const stats = await getStats();
+    res.json(stats);
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Records
+// ---------------------------------------------------------------------------
+app.get(
+  '/api/records',
+  asyncHandler(async (req, res) => {
+    const limit = parseLimit(req.query.limit, 50, 500);
+    const records = await listRecords(limit);
+    res.json(records);
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Anchor batches
+// ---------------------------------------------------------------------------
+app.get(
+  '/api/anchors',
+  asyncHandler(async (req, res) => {
+    const limit = parseLimit(req.query.limit, 50, 500);
+    const batches = await listBatches(limit);
+    res.json(batches);
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Verify by hash
+// ---------------------------------------------------------------------------
+app.get(
+  '/api/verify/:hash',
+  asyncHandler(async (req, res) => {
+    const hash = String(req.params.hash || '').trim();
+    if (!hash) {
+      res.status(400).json({ verified: false, error: 'hash is required' });
+      return;
+    }
+    const { record, batch } = await findByHash(hash);
+    if (record) {
+      res.json({
+        verified: true,
+        record,
+        batch,
+        merkleRoot: batch ? batch.merkle_root : null,
+      });
+      return;
+    }
+    res.json({ verified: false });
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Ingest a pending weather observation
+// ---------------------------------------------------------------------------
+app.post(
+  '/api/ingest',
+  asyncHandler(async (req, res) => {
+    const body = (req.body ?? {}) as {
+      stationId?: unknown;
+      observedAt?: unknown;
+      data?: unknown;
+    };
+
+    const stationId = Number(body.stationId);
+    if (!Number.isFinite(stationId)) {
+      res.status(400).json({ error: 'stationId (number) is required' });
+      return;
+    }
+
+    if (body.data === undefined || body.data === null || typeof body.data !== 'object') {
+      res.status(400).json({ error: 'data (object) is required' });
+      return;
+    }
+
+    let observedAt: Date;
+    if (body.observedAt !== undefined && body.observedAt !== null) {
+      observedAt = new Date(String(body.observedAt));
+      if (Number.isNaN(observedAt.getTime())) {
+        res.status(400).json({ error: 'observedAt must be a valid ISO timestamp' });
+        return;
+      }
+    } else {
+      observedAt = new Date();
+    }
+
+    const result = await insertPending(stationId, observedAt, body.data);
+    res.status(201).json(result);
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Manual batch trigger
+// ---------------------------------------------------------------------------
+app.post(
+  '/api/batch',
+  asyncHandler(async (_req, res) => {
+    const result = await runHashBatch(config.MAX_BATCH);
+    res.json(result);
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Static dashboard
+// ---------------------------------------------------------------------------
+const publicDir = path.join(process.cwd(), 'public');
+app.use(express.static(publicDir));
+
+app.get('/', (_req: Request, res: Response) => {
+  res.sendFile(path.join(publicDir, 'index.html'));
+});
+
+// ---------------------------------------------------------------------------
+// Error handler
+// ---------------------------------------------------------------------------
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  // eslint-disable-next-line no-console
+  console.error('Request error:', err);
+  res.status(500).json({ error: 'internal_error', message: err.message });
+});
+
+/**
+ * Parse and clamp a limit query parameter.
+ */
+function parseLimit(raw: unknown, fallback: number, max: number): number {
+  const n = parseInt(String(raw ?? ''), 10);
+  if (!Number.isFinite(n) || n <= 0) {
+    return fallback;
+  }
+  return Math.min(n, max);
+}
+
+/**
+ * Boot sequence: validate config, run migrations, start the hash loop, listen.
+ */
+async function main(): Promise<void> {
+  validateConfig();
+
+  // Idempotent migrations on boot.
+  try {
+    await migrate();
+    // eslint-disable-next-line no-console
+    console.log('Migrations applied.');
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('Migration failed:', err);
+    throw err;
+  }
+
+  // Background batcher loop.
+  startHashLoop(config.BATCH_INTERVAL_SEC);
+  // eslint-disable-next-line no-console
+  console.log(`Hash loop started (every ${config.BATCH_INTERVAL_SEC}s).`);
+
+  app.listen(config.PORT, '0.0.0.0', () => {
+    // eslint-disable-next-line no-console
+    console.log(
+      `EdenCode Anchor listening on 0.0.0.0:${config.PORT} (mode=${config.ANCHOR_MODE})`
+    );
+  });
+}
+
+main().catch((err) => {
+  // eslint-disable-next-line no-console
+  console.error('Fatal startup error:', err);
+  process.exit(1);
+});
+
+export { app };

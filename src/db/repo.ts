@@ -180,6 +180,80 @@ export async function listBatches(limit: number): Promise<any[]> {
 }
 
 /**
+ * A full weather record (including the raw `data` JSONB) used to build the
+ * Knowledge-tab teaching example.
+ */
+export interface SampleRecord {
+  id: number;
+  station_id: number | null;
+  observed_at: string | null;
+  data: any;
+  status: string;
+  record_hash: string | null;
+  batch_id: number | null;
+  leaf_index: number | null;
+}
+
+/**
+ * Map a raw weather_records row into a SampleRecord (normalizing ids/dates).
+ */
+function toSampleRecord(r: any): SampleRecord {
+  return {
+    id: Number(r.id),
+    station_id:
+      r.station_id === null || r.station_id === undefined ? null : Number(r.station_id),
+    observed_at: toIso(r.observed_at),
+    data: r.data,
+    status: r.status,
+    record_hash: r.record_hash ?? null,
+    batch_id:
+      r.batch_id === null || r.batch_id === undefined ? null : Number(r.batch_id),
+    leaf_index:
+      r.leaf_index === null || r.leaf_index === undefined ? null : Number(r.leaf_index),
+  };
+}
+
+/**
+ * Pick a single record to drive the Knowledge-tab worked example.
+ *
+ * Preference order:
+ *   1. The most recent record that is status='hashed' AND attached to a batch
+ *      (so the full raw -> hash -> Merkle-root chain can be demonstrated).
+ *   2. Otherwise, the most recent record of any status (so at least raw ->
+ *      canonical -> hash can be shown).
+ *
+ * Returns null only when the table is empty (caller serves a baked-in fallback).
+ */
+export async function getSampleRecord(): Promise<SampleRecord | null> {
+  const cols = `id, station_id, observed_at, data, status, record_hash, batch_id, leaf_index`;
+
+  const hashed = await pool.query(
+    `SELECT ${cols}
+       FROM weather_records
+      WHERE status = 'hashed'
+        AND record_hash IS NOT NULL
+        AND batch_id IS NOT NULL
+      ORDER BY observed_at DESC NULLS LAST, id DESC
+      LIMIT 1`
+  );
+  if (hashed.rows.length > 0) {
+    return toSampleRecord(hashed.rows[0]);
+  }
+
+  const any = await pool.query(
+    `SELECT ${cols}
+       FROM weather_records
+      ORDER BY observed_at DESC NULLS LAST, id DESC
+      LIMIT 1`
+  );
+  if (any.rows.length > 0) {
+    return toSampleRecord(any.rows[0]);
+  }
+
+  return null;
+}
+
+/**
  * Look up a record by its per-record SHA-256 hash, plus its batch (if any).
  */
 export async function findByHash(

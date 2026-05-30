@@ -475,6 +475,238 @@
   }
   .autorefresh.live .pulse { background: var(--accent); box-shadow: 0 0 8px var(--accent); animation: arPulse 2s ease-in-out infinite; }
   @keyframes arPulse { 0%,100% { opacity: .4; } 50% { opacity: 1; } }
+
+  /* ===================== KNOWLEDGE TAB ===================== */
+  .kn-hero { margin-bottom: 22px; }
+  .kn-hero h2 { font-size: 20px; margin: 0 0 8px; }
+  .kn-hero p { font-size: 13.5px; color: var(--muted); margin: 0; max-width: 760px; }
+
+  /* Pipeline diagram */
+  .pipeline {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .pipe-step {
+    flex: 1 1 120px;
+    min-width: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .pipe-box {
+    width: 100%;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    min-height: 96px;
+    justify-content: center;
+    transition: border-color .15s ease, transform .15s ease;
+  }
+  .pipe-box:hover { border-color: var(--accent-2); transform: translateY(-2px); }
+  .pipe-box.accent { border-color: rgba(54,211,153,.45); background: linear-gradient(180deg, rgba(54,211,153,.07), var(--panel-2)); }
+  .pipe-box.accent2 { border-color: rgba(74,168,255,.45); background: linear-gradient(180deg, rgba(74,168,255,.07), var(--panel-2)); }
+  .pipe-ico {
+    width: 34px; height: 34px;
+    display: grid; place-items: center;
+    border-radius: 9px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+  }
+  .pipe-ico svg { display: block; }
+  .pipe-title { font-size: 12px; font-weight: 700; letter-spacing: .2px; line-height: 1.25; }
+  .pipe-cap { font-size: 10.5px; color: var(--muted); margin-top: 8px; line-height: 1.35; padding: 0 4px; }
+  .pipe-arrow {
+    flex: 0 0 26px;
+    display: grid;
+    place-items: center;
+    color: var(--muted);
+    align-self: flex-start;
+    margin-top: 38px;
+  }
+  @media (max-width: 720px) {
+    .pipeline { flex-direction: column; align-items: stretch; }
+    .pipe-step { min-width: 0; }
+    .pipe-arrow { transform: rotate(90deg); margin: 4px auto; align-self: center; }
+    .pipe-cap { padding-bottom: 4px; }
+  }
+
+  /* Worked example */
+  .kn-step {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel-2);
+    padding: 14px 16px;
+    margin-bottom: 14px;
+  }
+  .kn-step-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .kn-step-num {
+    width: 24px; height: 24px;
+    flex: 0 0 auto;
+    border-radius: 7px;
+    display: grid; place-items: center;
+    font-size: 12px; font-weight: 800;
+    color: #06120c;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+  }
+  .kn-step-title { font-size: 14px; font-weight: 700; }
+  .kn-step-sub { font-size: 11.5px; color: var(--muted); margin-left: auto; font-family: var(--mono); }
+  .kn-step-note { font-size: 12px; color: var(--muted); margin: 2px 0 10px; }
+  .kn-code {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    padding: 12px;
+    overflow: auto;
+    max-height: 280px;
+    white-space: pre;
+    color: var(--text);
+    line-height: 1.55;
+    margin: 0;
+  }
+  .kn-code.wrap { white-space: pre-wrap; word-break: break-all; }
+  .kn-code .jk { color: var(--accent-2); }
+  .kn-code .js { color: var(--accent); }
+  .kn-code .jn { color: var(--warn); }
+  .kn-code .jb { color: #c89bff; }
+  .kn-hashline {
+    font-family: var(--mono);
+    font-size: 13px;
+    word-break: break-all;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    padding: 11px 12px;
+    margin: 0 0 10px;
+    color: var(--accent);
+  }
+  .kn-hashline .lbl { color: var(--muted); font-size: 11px; display: block; margin-bottom: 4px; }
+  .kn-recompute-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 4px 0 0; }
+  .kn-match {
+    display: none;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px; font-weight: 800;
+    border-radius: 999px;
+    padding: 5px 13px;
+    border: 1px solid var(--line);
+    font-family: var(--mono);
+  }
+  .kn-match.show { display: inline-flex; }
+  .kn-match.ok { color: var(--accent); border-color: rgba(54,211,153,.5); background: rgba(54,211,153,.08); }
+  .kn-match.bad { color: var(--err); border-color: rgba(248,113,113,.5); background: rgba(248,113,113,.08); }
+  .kn-computed {
+    display: none;
+    font-family: var(--mono);
+    font-size: 12px;
+    word-break: break-all;
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: 9px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+  }
+  .kn-computed.show { display: block; }
+  .kn-computed .lbl { color: var(--muted); font-size: 11px; display: block; margin-bottom: 4px; }
+
+  /* leaf -> root in worked example */
+  .kn-l2r-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .kn-rootchip {
+    font-family: var(--mono); font-size: 12px; font-weight: 700;
+    color: var(--accent); background: rgba(54,211,153,.1);
+    border: 1px solid rgba(54,211,153,.35);
+    border-radius: 7px; padding: 2px 9px;
+  }
+  .kn-proof-row {
+    display: grid;
+    grid-template-columns: 44px 60px 1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 7px 9px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    background: var(--panel);
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .kn-proof-row .lvl { color: var(--muted); font-size: 11px; }
+  .kn-proof-row .pos {
+    text-align: center; font-weight: 700; font-size: 10.5px;
+    border-radius: 6px; padding: 2px 0;
+    color: var(--accent-2); background: rgba(74,168,255,.12); border: 1px solid rgba(74,168,255,.35);
+  }
+  .kn-proof-row .sib { word-break: break-all; }
+  .kn-leafline {
+    font-family: var(--mono); font-size: 12px; word-break: break-all;
+    padding: 8px 11px; border-radius: 8px; margin-bottom: 12px;
+    border: 1px solid rgba(245,185,66,.4);
+    background: rgba(245,185,66,.06); color: var(--warn);
+  }
+  .kn-leafline .lbl { color: var(--muted); font-size: 11px; display: block; margin-bottom: 4px; }
+  .kn-proofvalid {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11.5px; font-weight: 700;
+    border-radius: 999px; padding: 3px 11px; margin-left: 4px;
+    border: 1px solid var(--line); font-family: var(--mono);
+  }
+  .kn-proofvalid.ok { color: var(--accent); border-color: rgba(54,211,153,.5); }
+  .kn-proofvalid.bad { color: var(--err); border-color: rgba(248,113,113,.5); }
+
+  .kn-real-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 700; font-family: var(--mono);
+    border-radius: 999px; padding: 3px 10px;
+    border: 1px solid var(--line);
+  }
+  .kn-real-badge.real { color: var(--accent); border-color: rgba(54,211,153,.5); }
+  .kn-real-badge.demo { color: var(--warn); border-color: rgba(245,185,66,.5); }
+
+  /* Why it matters cards */
+  .kn-why-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-top: 4px;
+  }
+  @media (max-width: 720px) { .kn-why-grid { grid-template-columns: 1fr; } }
+  .kn-why-card {
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 15px 16px;
+  }
+  .kn-why-card h3 {
+    font-size: 13.5px; margin: 0 0 7px;
+    display: flex; align-items: center; gap: 9px;
+  }
+  .kn-why-ico {
+    width: 28px; height: 28px; flex: 0 0 auto;
+    display: grid; place-items: center;
+    border-radius: 8px; background: var(--panel); border: 1px solid var(--line);
+  }
+  .kn-why-card p { font-size: 12.5px; color: var(--muted); margin: 0; line-height: 1.55; }
+  .kn-why-card ul { font-size: 12.5px; color: var(--muted); margin: 6px 0 0; padding-left: 18px; line-height: 1.5; }
+  .kn-why-card ul li { margin-bottom: 3px; }
+  .kn-why-card ul li b { color: var(--text); font-weight: 600; }
+
+  .kn-warn-line { font-size: 11.5px; color: var(--warn); margin-top: 8px; }
 </style>
 </head>
 <body>
@@ -500,6 +732,7 @@
   <nav class="tabs" id="tabs">
     <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
     <button class="tab-btn" data-tab="hashtree">Hash Tree</button>
+    <button class="tab-btn" data-tab="knowledge">Knowledge</button>
   </nav>
 
   <!-- ===================== DASHBOARD TAB ===================== -->
@@ -637,6 +870,186 @@
     </section>
 
   </div><!-- /panel-hashtree -->
+
+  <!-- ===================== KNOWLEDGE TAB ===================== -->
+  <div class="tab-panel" id="panel-knowledge">
+
+    <div class="kn-hero">
+      <h2>How EdenCode Anchor works</h2>
+      <p>Real weather observations from SK farm stations are turned into tamper-evident
+      cryptographic proofs. The raw data stays private; only a 32-byte fingerprint becomes
+      a public, verifiable artifact. Below is a live worked example you can recompute in
+      your own browser — no trust in EdenCode required.</p>
+    </div>
+
+    <!-- 1) PIPELINE DIAGRAM -->
+    <section class="card">
+      <h2>The provenance pipeline</h2>
+      <p class="sub">From a physical sensor reading to an artifact anyone can independently verify.</p>
+      <div class="pipeline" id="pipeline">
+        <div class="pipe-step">
+          <div class="pipe-box accent2">
+            <div class="pipe-ico">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4aa8ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6"/><path d="M5 8h14"/><path d="M7 8v4a5 5 0 0 0 10 0V8"/><path d="M12 17v5"/></svg>
+            </div>
+            <div class="pipe-title">Tempest Farm Station</div>
+          </div>
+          <div class="pipe-cap">A real WeatherFlow Tempest sensor on a Saskatchewan farm emits an observation.</div>
+        </div>
+        <div class="pipe-arrow">
+          <svg width="20" height="14" viewBox="0 0 20 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7h14"/><path d="M12 2l5 5-5 5"/></svg>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-box">
+            <div class="pipe-ico">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8a98ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+            </div>
+            <div class="pipe-title">Raw Observation</div>
+          </div>
+          <div class="pipe-cap">Temperature, wind, rain, pressure &amp; more captured as a JSON record.</div>
+        </div>
+        <div class="pipe-arrow">
+          <svg width="20" height="14" viewBox="0 0 20 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7h14"/><path d="M12 2l5 5-5 5"/></svg>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-box">
+            <div class="pipe-ico">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8a98ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V5a1 1 0 0 1 1-1h2"/><path d="M17 4h2a1 1 0 0 1 1 1v2"/><path d="M20 17v2a1 1 0 0 1-1 1h-2"/><path d="M7 20H5a1 1 0 0 1-1-1v-2"/><path d="M8 12h8"/></svg>
+            </div>
+            <div class="pipe-title">Canonicalize</div>
+          </div>
+          <div class="pipe-cap">Station, time &amp; data are serialized into one exact, deterministic string.</div>
+        </div>
+        <div class="pipe-arrow">
+          <svg width="20" height="14" viewBox="0 0 20 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7h14"/><path d="M12 2l5 5-5 5"/></svg>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-box accent">
+            <div class="pipe-ico">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#36d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <div class="pipe-title">SHA-256 → Leaf Key</div>
+          </div>
+          <div class="pipe-cap">A one-way hash collapses the record into a unique 32-byte fingerprint.</div>
+        </div>
+        <div class="pipe-arrow">
+          <svg width="20" height="14" viewBox="0 0 20 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7h14"/><path d="M12 2l5 5-5 5"/></svg>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-box">
+            <div class="pipe-ico">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8a98ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="2"/><circle cx="5" cy="20" r="2"/><circle cx="19" cy="20" r="2"/><path d="M12 6v4"/><path d="M12 10L5 18"/><path d="M12 10l7 8"/></svg>
+            </div>
+            <div class="pipe-title">Merkle Batch</div>
+          </div>
+          <div class="pipe-cap">Many leaf hashes are combined pairwise into a single Merkle tree.</div>
+        </div>
+        <div class="pipe-arrow">
+          <svg width="20" height="14" viewBox="0 0 20 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7h14"/><path d="M12 2l5 5-5 5"/></svg>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-box accent">
+            <div class="pipe-ico">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#36d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+            </div>
+            <div class="pipe-title">Anchored Root</div>
+          </div>
+          <div class="pipe-cap">The tree's single root hash is stored as the tamper-evident anchor.</div>
+        </div>
+        <div class="pipe-arrow">
+          <svg width="20" height="14" viewBox="0 0 20 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7h14"/><path d="M12 2l5 5-5 5"/></svg>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-box accent2">
+            <div class="pipe-ico">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4aa8ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            </div>
+            <div class="pipe-title">Anyone Can Verify</div>
+          </div>
+          <div class="pipe-cap">Recompute leaf + proof to the same root — proof without trusting us.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2) LIVE WORKED EXAMPLE -->
+    <section class="card">
+      <h2>
+        Live worked example
+        <span id="knRealBadge"></span>
+      </h2>
+      <p class="sub">A real record currently stored in EdenCode, walked from raw data to a verifiable anchor.</p>
+      <div class="toolbar" style="margin-bottom:14px">
+        <button id="knReloadBtn" class="ghost">Load latest</button>
+        <div class="spacer"></div>
+        <span class="updated" id="knUpdated">—</span>
+      </div>
+
+      <div id="knExampleBody">
+        <div class="empty" id="knLoading">Loading a live example…</div>
+      </div>
+    </section>
+
+    <!-- 3) WHY IT MATTERS -->
+    <section class="card">
+      <h2>Why it matters</h2>
+      <p class="sub">A 32-byte hash, anchored once, turns ephemeral farm telemetry into durable, defensible evidence.</p>
+      <div class="kn-why-grid">
+
+        <div class="kn-why-card">
+          <h3>
+            <span class="kn-why-ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#36d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+            </span>
+            Tamper-evidence
+          </h3>
+          <p>Change a single digit of temperature, wind or rainfall and the SHA-256 fingerprint
+          changes completely — and no longer reconstructs the anchored Merkle root. Any edit,
+          deletion or backdating is mathematically detectable.</p>
+        </div>
+
+        <div class="kn-why-card">
+          <h3>
+            <span class="kn-why-ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4aa8ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            </span>
+            Timestamp &amp; provenance
+          </h3>
+          <p>Each record is bound to its station and observation time before hashing. The anchored
+          root proves that this exact reading existed, unaltered, at that moment — a cryptographic
+          chain of custody from sensor to claim.</p>
+        </div>
+
+        <div class="kn-why-card">
+          <h3>
+            <span class="kn-why-ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#36d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            Data sovereignty
+          </h3>
+          <p>Only opaque 32-byte hashes are ever published. The raw observation — and any commercial
+          insight in it — stays private to the farm. You prove integrity without ever exposing the
+          underlying agronomic data.</p>
+        </div>
+
+        <div class="kn-why-card">
+          <h3>
+            <span class="kn-why-ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f5b942" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v8"/><path d="M5 10c0 5 3 9 7 11 4-2 7-6 7-11"/><path d="M5 10l7-3 7 3"/></svg>
+            </span>
+            Agricultural value
+          </h3>
+          <ul>
+            <li><b>Claim defense:</b> hard evidence for crop-insurance &amp; AgriStability frost, drought or hail events.</li>
+            <li><b>Carbon baselines:</b> auditable weather inputs underpinning carbon-credit &amp; sustainability accounting.</li>
+            <li><b>Traceability:</b> tamper-proof growing conditions for organic &amp; provenance certification.</li>
+            <li><b>Smart contracts:</b> trustworthy data feed for parametric insurance &amp; supply-contract triggers.</li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+  </div><!-- /panel-knowledge -->
 
   <footer>
     EdenCode Anchor · hash-only weather provenance · Merkle-anchored, no broadcast required
@@ -950,9 +1363,10 @@
     for (var i = 0; i < btns.length; i++) {
       btns[i].classList.toggle("active", btns[i].getAttribute("data-tab") === name);
     }
-    var dash = $("panel-dashboard"), ht = $("panel-hashtree");
+    var dash = $("panel-dashboard"), ht = $("panel-hashtree"), kn = $("panel-knowledge");
     dash.classList.toggle("active", name === "dashboard");
     ht.classList.toggle("active", name === "hashtree");
+    kn.classList.toggle("active", name === "knowledge");
     if (name === "hashtree" && !hashTreeLoaded) {
       hashTreeLoaded = true;
       loadMetrics();
@@ -960,6 +1374,10 @@
     }
     if (name === "hashtree" && autoEnabled() && !document.hidden) {
       startAuto();
+    }
+    if (name === "knowledge") {
+      // Refresh the worked example each time the tab is opened.
+      loadKnowledgeExample();
     }
   }
   $("tabs").addEventListener("click", function (ev) {
@@ -1562,6 +1980,266 @@
 
   $("htVerifyBtn").addEventListener("click", function () { proveHash($("htVerifyInput").value); });
   $("htVerifyInput").addEventListener("keydown", function (e) { if (e.key === "Enter") proveHash(this.value); });
+
+  // =========================================================================
+  // KNOWLEDGE TAB — live worked example (raw -> hash -> Merkle -> verify)
+  // =========================================================================
+  var knLoading = false;          // guard against overlapping reloads
+  var knSample = null;            // last loaded /api/explain/sample payload
+
+  // UTF-8 encode -> ArrayBuffer (for crypto.subtle.digest).
+  function utf8Bytes(str) {
+    if (typeof TextEncoder !== "undefined") return new TextEncoder().encode(str);
+    // Fallback (very old browsers): manual UTF-8.
+    var utf8 = unescape(encodeURIComponent(str));
+    var arr = new Uint8Array(utf8.length);
+    for (var i = 0; i < utf8.length; i++) arr[i] = utf8.charCodeAt(i);
+    return arr;
+  }
+  function bytesToHex(buf) {
+    var bytes = new Uint8Array(buf), hex = "";
+    for (var i = 0; i < bytes.length; i++) {
+      hex += (bytes[i] >>> 4).toString(16) + (bytes[i] & 15).toString(16);
+    }
+    return hex;
+  }
+  function subtleAvailable() {
+    return !!(window.crypto && window.crypto.subtle && typeof window.crypto.subtle.digest === "function");
+  }
+
+  // Pretty-print + lightly syntax-highlight a JSON value as escaped HTML.
+  function prettyJSON(value) {
+    var json;
+    try { json = JSON.stringify(value, null, 2); }
+    catch (e) { json = String(value); }
+    var escd = esc(json);
+    // colorize tokens (operating on already-escaped text; quotes are &quot;)
+    return escd.replace(
+      /(&quot;(\\.|[^&\\]|&(?!quot;))*?&quot;)(\s*:)?|\b(true|false|null)\b|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g,
+      function (m, str, _q, colon, kw, num) {
+        if (str !== undefined && str !== "") {
+          return colon
+            ? '<span class="jk">' + str + '</span>' + colon
+            : '<span class="js">' + str + '</span>';
+        }
+        if (kw !== undefined) return '<span class="jb">' + kw + '</span>';
+        if (num !== undefined) return '<span class="jn">' + num + '</span>';
+        return m;
+      }
+    );
+  }
+
+  function knBadge(isReal) {
+    var el = $("knRealBadge");
+    if (!el) return;
+    if (isReal) {
+      el.innerHTML = '<span class="kn-real-badge real">&#9679; live record</span>';
+    } else {
+      el.innerHTML = '<span class="kn-real-badge demo">&#9679; demo fallback</span>';
+    }
+  }
+
+  async function loadKnowledgeExample() {
+    if (knLoading) return;
+    knLoading = true;
+    var body = $("knExampleBody");
+    var btn = $("knReloadBtn");
+    if (btn) btn.disabled = true;
+    body.innerHTML = '<div class="empty">Loading a live example…</div>';
+    try {
+      var s = await getJSON("/api/explain/sample");
+      knSample = s;
+      renderKnowledgeExample(s);
+      $("knUpdated").textContent = "Updated " + new Date().toLocaleTimeString();
+    } catch (e) {
+      knSample = null;
+      $("knRealBadge").innerHTML = "";
+      body.innerHTML = '<div class="empty">Could not load a worked example: ' + esc(e.message) + '</div>';
+    } finally {
+      knLoading = false;
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  function renderKnowledgeExample(s) {
+    s = s || {};
+    var body = $("knExampleBody");
+    knBadge(s.isReal === true);
+
+    var algo = esc((s.algo || "sha256").toUpperCase());
+    var station = (s.station != null) ? esc(s.station) : "—";
+    var observedAt = s.observedAt ? fmtTime(s.observedAt) : "—";
+    var canonical = (s.canonical != null) ? String(s.canonical) : "";
+    var recordHash = String(s.recordHash || "");
+    var note = s.note ? esc(s.note) : "Canonical pre-image of station + observation time + data.";
+    var anchor = s.anchor || null;
+
+    // Step 4 markup
+    var step4;
+    if (anchor) {
+      var proof = Array.isArray(anchor.proof) ? anchor.proof : [];
+      var rows = proof.length
+        ? proof.map(function (p, i) {
+            var pos = esc(String(p.position || "?").toLowerCase());
+            return '<div class="kn-proof-row">' +
+              '<div class="lvl">L' + i + '</div>' +
+              '<div class="pos">' + pos + '</div>' +
+              '<div class="sib" title="' + esc(p.hash) + '">' + esc(p.hash) + '</div>' +
+            '</div>';
+          }).join("")
+        : '<div class="kn-step-note">Single-leaf batch — this leaf is itself the root; no sibling proof needed.</div>';
+
+      var pv = (anchor.proofValid === true)
+        ? '<span class="kn-proofvalid ok">proofValid: true</span>'
+        : '<span class="kn-proofvalid bad">proofValid: false</span>';
+
+      step4 =
+        '<div class="kn-step">' +
+          '<div class="kn-step-head">' +
+            '<span class="kn-step-num">4</span>' +
+            '<span class="kn-step-title">Into the Merkle tree</span>' +
+            '<span class="kn-step-sub">batch #' + esc(anchor.batchId) +
+              ' · ' + esc(anchor.leafCount) + ' leaves · depth ' + esc(anchor.depth) + '</span>' +
+          '</div>' +
+          '<div class="kn-step-note">This leaf is combined pairwise with the sibling hashes below, ' +
+            'level by level, until they collapse into the single anchored root.</div>' +
+          '<div class="kn-leafline"><span class="lbl">This record’s leaf (index ' +
+            esc(anchor.leafIndex) + ')</span>' + esc(recordHash) + '</div>' +
+          '<div class="kn-l2r-head">' +
+            '<span class="kn-step-sub" style="margin-left:0">Inclusion proof — ' + proof.length +
+              ' sibling' + (proof.length === 1 ? '' : 's') + ' (leaf → root)</span>' +
+            pv +
+          '</div>' +
+          rows +
+          '<div class="kn-leafline" style="border-color:rgba(54,211,153,.4);background:rgba(54,211,153,.06);color:var(--accent);margin-top:10px">' +
+            '<span class="lbl">Anchored Merkle root</span>' + esc(anchor.merkleRoot) + '</div>' +
+          '<div class="kn-recompute-row">' +
+            '<button id="knViewTreeBtn" class="ghost">View in Hash Tree &rarr;</button>' +
+            '<span class="kn-step-note" style="margin:0">Highlights this record’s proof path in the tree viewer.</span>' +
+          '</div>' +
+        '</div>';
+    } else {
+      step4 =
+        '<div class="kn-step">' +
+          '<div class="kn-step-head">' +
+            '<span class="kn-step-num">4</span>' +
+            '<span class="kn-step-title">Into the Merkle tree</span>' +
+          '</div>' +
+          '<div class="kn-step-note">This record has not yet been batched into a Merkle tree, ' +
+            'so there is no inclusion proof to show yet. Once a batch runs, its leaf hash is ' +
+            'combined with siblings up to an anchored root.</div>' +
+        '</div>';
+    }
+
+    var recomputeControls = subtleAvailable()
+      ? '<div class="kn-recompute-row">' +
+          '<button id="knRecomputeBtn">Recompute in your browser</button>' +
+          '<span class="kn-match" id="knMatch"></span>' +
+        '</div>' +
+        '<div class="kn-computed" id="knComputed"></div>'
+      : '<div class="kn-warn-line">Browser SHA-256 (Web Crypto) needs a secure context (HTTPS). ' +
+        'Open this page over HTTPS to recompute the hash live and confirm the match.</div>';
+
+    body.innerHTML =
+      // Step 1 — raw data
+      '<div class="kn-step">' +
+        '<div class="kn-step-head">' +
+          '<span class="kn-step-num">1</span>' +
+          '<span class="kn-step-title">Raw Tempest data</span>' +
+          '<span class="kn-step-sub">station ' + station + ' · ' + esc(observedAt) + '</span>' +
+        '</div>' +
+        '<div class="kn-step-note">The full observation as captured. This is the private record — ' +
+          'it never goes on-chain; only its hash does.</div>' +
+        '<pre class="kn-code">' + prettyJSON(s.raw) + '</pre>' +
+      '</div>' +
+
+      // Step 2 — canonical pre-image
+      '<div class="kn-step">' +
+        '<div class="kn-step-head">' +
+          '<span class="kn-step-num">2</span>' +
+          '<span class="kn-step-title">Canonical pre-image</span>' +
+        '</div>' +
+        '<div class="kn-step-note">' + note + ' This exact UTF-8 string is the input to the hash.</div>' +
+        '<pre class="kn-code wrap" id="knCanonical">' + esc(canonical) + '</pre>' +
+      '</div>' +
+
+      // Step 3 — SHA-256 -> the key
+      '<div class="kn-step">' +
+        '<div class="kn-step-head">' +
+          '<span class="kn-step-num">3</span>' +
+          '<span class="kn-step-title">SHA-256 → the key</span>' +
+          '<span class="kn-step-sub">' + algo + '</span>' +
+        '</div>' +
+        '<div class="kn-step-note">Hashing the canonical string yields this record’s stored key. ' +
+          'Recompute it yourself to confirm we did not fake it.</div>' +
+        '<div class="kn-hashline"><span class="lbl">Stored record hash</span>' + esc(recordHash) + '</div>' +
+        recomputeControls +
+      '</div>' +
+
+      // Step 4 — Merkle
+      step4 +
+
+      // Step 5 — anchored & verifiable
+      '<div class="kn-step">' +
+        '<div class="kn-step-head">' +
+          '<span class="kn-step-num">5</span>' +
+          '<span class="kn-step-title">Anchored &amp; verifiable</span>' +
+        '</div>' +
+        '<div class="kn-step-note">The Merkle root is the tamper-evident artifact. Anyone — an insurer, ' +
+          'an auditor, a court — can independently recompute this leaf from the raw data and walk the ' +
+          'proof to the same root. If even one byte of the observation changes, the leaf changes, the ' +
+          'walk fails, and the tampering is exposed. No trust in EdenCode is required.</div>' +
+      '</div>';
+
+    // Wire the recompute button.
+    var rc = $("knRecomputeBtn");
+    if (rc) {
+      rc.addEventListener("click", function () {
+        recomputeKnowledgeHash(canonical, recordHash, this);
+      });
+    }
+    // Wire "View in Hash Tree" (reuses the existing proof-path highlight).
+    var vt = $("knViewTreeBtn");
+    if (vt) {
+      vt.addEventListener("click", function () {
+        if (recordHash) {
+          $("htVerifyInput").value = recordHash;
+          proveHash(recordHash);   // switches to Hash Tree tab + lights up the path
+        }
+      });
+    }
+  }
+
+  // Run SHA-256 over the canonical UTF-8 bytes in-browser and compare to recordHash.
+  async function recomputeKnowledgeHash(canonical, recordHash, btn) {
+    var matchEl = $("knMatch");
+    var compEl = $("knComputed");
+    if (!subtleAvailable()) return;
+    var prev = btn ? btn.textContent : "";
+    if (btn) { btn.disabled = true; btn.textContent = "Hashing…"; }
+    try {
+      var digest = await window.crypto.subtle.digest("SHA-256", utf8Bytes(canonical));
+      var hex = bytesToHex(digest);
+      var match = (hex.toLowerCase() === String(recordHash).toLowerCase());
+
+      compEl.className = "kn-computed show";
+      compEl.innerHTML = '<span class="lbl">SHA-256 computed in your browser</span>' + esc(hex);
+
+      matchEl.className = "kn-match show " + (match ? "ok" : "bad");
+      matchEl.innerHTML = match
+        ? '&#10003; MATCH — identical to the stored key'
+        : '&#10007; MISMATCH';
+    } catch (e) {
+      compEl.className = "kn-computed show";
+      compEl.innerHTML = '<span class="lbl">Recompute failed</span>' + esc(e.message);
+      matchEl.className = "kn-match show bad";
+      matchEl.innerHTML = '&#10007; ERROR';
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = prev || "Recompute in your browser"; }
+    }
+  }
+
+  $("knReloadBtn").addEventListener("click", loadKnowledgeExample);
 
   // =========================================================================
   // FEATURE C — Auto-refresh (20s) for the Hash Tree tab

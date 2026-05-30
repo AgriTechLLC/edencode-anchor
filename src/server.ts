@@ -13,9 +13,15 @@ import {
   getBatchById,
   getBatchLeaves,
   getMetrics,
+  getSampleRecord,
 } from './db/repo';
 import { buildMerkle, merkleProof, verifyProof } from './anchor/merkle';
-import { runHashBatch, startHashLoop } from './anchor/hash-processor';
+import {
+  runHashBatch,
+  startHashLoop,
+  canonicalHash,
+  canonicalPreimage,
+} from './anchor/hash-processor';
 import { startPoller, stopPoller } from './service/poller';
 
 const app = express();
@@ -210,6 +216,117 @@ app.get(
 );
 
 // ---------------------------------------------------------------------------
+// Knowledge tab: a real, browser-recomputable worked example
+//
+// Returns the most recent hashed+batched record turned into a teaching example
+// (raw Tempest obs -> canonical pre-image -> SHA-256 leaf key -> Merkle root +
+// proof). Falls back to the most recent record of any status, and finally to a
+// baked-in realistic Tempest-shaped example (isReal:false) when the DB is empty.
+//
+// The `canonical` string is the EXACT UTF-8 pre-image such that
+//   sha256(utf8(canonical)) === recordHash
+// because both are derived from canonicalPreimage()/canonicalHash().
+// ---------------------------------------------------------------------------
+app.get(
+  '/api/explain/sample',
+  asyncHandler(async (_req, res) => {
+    const note =
+      'canonical is the canonical-JSON of an envelope {s:station_id, t:observed_at(ISO-8601 UTC), d:data} with all object keys sorted recursively; record_hash = SHA-256(UTF-8(canonical)).';
+
+    const record = await getSampleRecord();
+
+    // DB empty: serve a baked-in, realistic Tempest-shaped fallback.
+    if (!record) {
+      const fallback = buildFallbackSample();
+      res.json({
+        isReal: false,
+        station: fallback.station_id,
+        observedAt: fallback.observed_at,
+        raw: fallback.data,
+        canonical: fallback.canonical,
+        recordHash: fallback.recordHash,
+        algo: 'sha256',
+        note,
+        anchor: null,
+      });
+      return;
+    }
+
+    const observedAt = record.observed_at;
+    const canonical = canonicalPreimage({
+      station_id: record.station_id ?? 0,
+      observed_at: observedAt ?? new Date(0).toISOString(),
+      data: record.data,
+    });
+
+    // For real hashed records use the stored record_hash (the actual key); for
+    // not-yet-hashed records recompute it so the example is still consistent.
+    const recordHash =
+      record.record_hash ??
+      canonicalHash({
+        station_id: record.station_id ?? 0,
+        observed_at: observedAt ?? new Date(0).toISOString(),
+        data: record.data,
+      });
+
+    // Build the Merkle anchor (proof to root) when the record is batched.
+    let anchor:
+      | null
+      | {
+          batchId: number;
+          merkleRoot: string;
+          leafIndex: number;
+          depth: number;
+          leafCount: number;
+          proof: Array<{ hash: string; position: 'left' | 'right' }>;
+          proofValid: boolean;
+        } = null;
+
+    if (record.batch_id !== null && record.record_hash) {
+      const batch = await getBatchById(record.batch_id);
+      if (batch) {
+        const leaves = await getBatchLeaves(record.batch_id);
+        const leafHashes = leaves.map((l) => l.hash);
+        const { layers } = buildMerkle(leafHashes);
+        const depth = layers.length > 0 ? layers.length - 1 : 0;
+
+        // Locate this record's leaf: prefer record id, fall back to hash.
+        let idx = leaves.findIndex((l) => l.recordId === record.id);
+        if (idx < 0) {
+          idx = leafHashes.indexOf(record.record_hash);
+        }
+
+        if (idx >= 0) {
+          const proof = merkleProof(layers, idx);
+          const proofValid = verifyProof(record.record_hash, proof, batch.merkle_root);
+          anchor = {
+            batchId: batch.id,
+            merkleRoot: batch.merkle_root,
+            leafIndex: idx,
+            depth,
+            leafCount: batch.leaf_count,
+            proof,
+            proofValid,
+          };
+        }
+      }
+    }
+
+    res.json({
+      isReal: true,
+      station: record.station_id,
+      observedAt,
+      raw: record.data,
+      canonical,
+      recordHash,
+      algo: 'sha256',
+      note,
+      anchor,
+    });
+  })
+);
+
+// ---------------------------------------------------------------------------
 // Ingest a pending weather observation
 // ---------------------------------------------------------------------------
 app.post(
@@ -278,6 +395,75 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error('Request error:', err);
   res.status(500).json({ error: 'internal_error', message: err.message });
 });
+
+/**
+ * Build a baked-in, realistic Tempest-shaped worked example for when the DB has
+ * no records yet. The raw payload mirrors a real WeatherFlow Tempest
+ * current_conditions observation (SK farm station). The canonical pre-image and
+ * record hash are computed with the SAME canonicalHash/canonicalPreimage used
+ * for live records, so the browser can still recompute and MATCH it.
+ */
+function buildFallbackSample(): {
+  station_id: number;
+  observed_at: string;
+  data: Record<string, unknown>;
+  canonical: string;
+  recordHash: string;
+} {
+  // Fixed timestamp so the example is stable (epoch 1717000000 = 2024-05-29 UTC).
+  const epoch = 1717000000;
+  const stationId = 196029; // Worcester SK farm station.
+  const observedAt = new Date(epoch * 1000).toISOString();
+
+  const data: Record<string, unknown> = {
+    air_density: 1.17,
+    air_temperature: 18,
+    brightness: 41200,
+    conditions: 'Partly Cloudy',
+    delta_t: 5,
+    dew_point: 11,
+    feels_like: 18,
+    icon: 'partly-cloudy-day',
+    is_precip_local_day_rain_check: false,
+    is_precip_local_yesterday_rain_check: true,
+    lightning_strike_count_last_1hr: 0,
+    lightning_strike_count_last_3hr: 0,
+    lightning_strike_last_distance: 0,
+    lightning_strike_last_distance_msg: '',
+    lightning_strike_last_epoch: 0,
+    precip_accum_local_day: 0,
+    precip_accum_local_yesterday: 2,
+    precip_minutes_local_day: 0,
+    precip_minutes_local_yesterday: 14,
+    precip_probability: 10,
+    pressure_trend: 'steady',
+    relative_humidity: 63,
+    sea_level_pressure: 1014,
+    solar_radiation: 412,
+    station_pressure: 94.21,
+    time: epoch,
+    uv: 4,
+    wet_bulb_globe_temperature: 16,
+    wet_bulb_temperature: 14,
+    wind_avg: 3,
+    wind_direction: 215,
+    wind_direction_cardinal: 'SW',
+    wind_gust: 6,
+  };
+
+  const canonical = canonicalPreimage({
+    station_id: stationId,
+    observed_at: observedAt,
+    data,
+  });
+  const recordHash = canonicalHash({
+    station_id: stationId,
+    observed_at: observedAt,
+    data,
+  });
+
+  return { station_id: stationId, observed_at: observedAt, data, canonical, recordHash };
+}
 
 /**
  * Parse and clamp a limit query parameter.

@@ -22,14 +22,40 @@ function canonicalStringify(value: unknown): string {
 }
 
 /**
- * Compute the canonical SHA-256 hash (hex) of a weather record.
+ * Produce the EXACT canonical pre-image string that is SHA-256'd to obtain a
+ * record's `record_hash`. This is the literal UTF-8 byte sequence fed to the
+ * hash function, so any client (browser included) can reproduce the hash via
+ *   sha256(utf8(canonicalPreimage(record))) === canonicalHash(record).
  *
  * The record is reduced to a canonical envelope { s, t, d }:
  *   s = station_id
  *   t = observed_at as an ISO-8601 string (UTC)
  *   d = the raw observation payload
- * with all object keys sorted recursively before hashing. This yields a stable,
- * order-independent fingerprint of the record.
+ * with all object keys sorted recursively (canonical JSON). This yields a
+ * stable, key-order-independent fingerprint of the record.
+ */
+export function canonicalPreimage(record: {
+  station_id: number;
+  observed_at: string | Date;
+  data: unknown;
+}): string {
+  const observedAt =
+    record.observed_at instanceof Date
+      ? record.observed_at.toISOString()
+      : new Date(record.observed_at).toISOString();
+
+  return canonicalStringify({
+    s: record.station_id,
+    t: observedAt,
+    d: record.data,
+  });
+}
+
+/**
+ * Compute the canonical SHA-256 hash (hex) of a weather record.
+ *
+ * Defined as sha256hex(canonicalPreimage(record)) so the on-chain key and the
+ * browser-recomputable pre-image string are guaranteed to stay in lock-step.
  *
  * NOTE: The fixed-schema src/format encoder is intentionally not used here: it
  * requires the full 32-field WeatherData shape and throws on missing fields,
@@ -41,18 +67,7 @@ export function canonicalHash(record: {
   observed_at: string | Date;
   data: unknown;
 }): string {
-  const observedAt =
-    record.observed_at instanceof Date
-      ? record.observed_at.toISOString()
-      : new Date(record.observed_at).toISOString();
-
-  const canonical = canonicalStringify({
-    s: record.station_id,
-    t: observedAt,
-    d: record.data,
-  });
-
-  return sha256hex(canonical);
+  return sha256hex(canonicalPreimage(record));
 }
 
 /**

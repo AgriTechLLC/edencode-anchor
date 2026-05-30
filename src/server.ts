@@ -10,7 +10,11 @@ import {
   findByHash,
   insertPending,
   dbHealthy,
+  getBatchById,
+  getBatchLeaves,
+  getMetrics,
 } from './db/repo';
+import { buildMerkle } from './anchor/merkle';
 import { runHashBatch, startHashLoop } from './anchor/hash-processor';
 
 const app = express();
@@ -83,6 +87,59 @@ app.get(
     const limit = parseLimit(req.query.limit, 50, 500);
     const batches = await listBatches(limit);
     res.json(batches);
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Merkle tree for a single anchor batch
+// ---------------------------------------------------------------------------
+app.get(
+  '/api/anchors/:id/tree',
+  asyncHandler(async (req, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      res.status(400).json({ error: 'invalid batch id' });
+      return;
+    }
+
+    const batch = await getBatchById(id);
+    if (!batch) {
+      res.status(404).json({ error: 'batch not found' });
+      return;
+    }
+
+    const leaves = await getBatchLeaves(id);
+    const leafHashes = leaves.map((l) => l.hash);
+
+    // Rebuild the tree from the leaf hashes (ordered by leaf_index) so the
+    // layers and root can be independently verified against the stored root.
+    const { root, layers } = buildMerkle(leafHashes);
+    const depth = layers.length > 0 ? layers.length - 1 : 0;
+
+    res.json({
+      batchId: batch.id,
+      merkleRoot: batch.merkle_root,
+      leafCount: batch.leaf_count,
+      depth,
+      algo: batch.algo,
+      anchorMode: batch.anchor_mode,
+      bsvTxid: batch.bsv_txid,
+      createdAt: batch.created_at,
+      rootMatches: root === batch.merkle_root,
+      layers,
+      leaves,
+    });
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Aggregate metrics / statistics
+// ---------------------------------------------------------------------------
+app.get(
+  '/api/metrics',
+  asyncHandler(async (_req, res) => {
+    const metrics = await getMetrics();
+    res.json(metrics);
   })
 );
 

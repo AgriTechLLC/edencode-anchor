@@ -191,6 +191,134 @@
   .empty { color: var(--muted); padding: 14px 8px; font-size: 13px; }
   footer { margin-top: 30px; color: var(--muted); font-size: 12px; text-align: center; }
   .updated { font-size: 11.5px; color: var(--muted); }
+
+  /* ----- Tabs ----- */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid var(--line);
+  }
+  .tab-btn {
+    background: transparent;
+    color: var(--muted);
+    border: 0;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 14px;
+    padding: 10px 16px;
+    margin-bottom: -1px;
+    cursor: pointer;
+    transition: color .15s ease, border-color .15s ease;
+  }
+  .tab-btn:hover { filter: none; color: var(--text); }
+  .tab-btn:active { transform: none; }
+  .tab-btn.active { color: var(--text); border-bottom-color: var(--accent); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ----- Metrics strip (Hash Tree tab) ----- */
+  .grid-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+  @media (max-width: 720px) { .grid-metrics { grid-template-columns: repeat(2, 1fr); } }
+  .metric {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 14px 12px;
+  }
+  .metric .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
+  .metric .v { font-size: 24px; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .metric.accent .v { color: var(--accent); }
+  .metric.accent2 .v { color: var(--accent-2); }
+  .metric .sm { font-size: 17px; }
+
+  /* ----- Charts ----- */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  @media (max-width: 720px) { .charts-grid { grid-template-columns: 1fr; } }
+  .chart-box {
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px;
+    overflow-x: auto;
+  }
+  .chart-box.full { grid-column: 1 / -1; }
+  .chart-title { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin: 0 0 8px; }
+  .chart-svg { display: block; max-width: 100%; height: auto; }
+  .chart-svg .bar-batches { fill: var(--accent-2); }
+  .chart-svg .bar-records { fill: var(--accent); }
+  .chart-svg .bar-hist { fill: var(--accent); }
+  .chart-svg .ax { stroke: var(--line); stroke-width: 1; }
+  .chart-svg .lbl { fill: var(--muted); font-size: 9px; font-family: var(--mono); }
+  .chart-svg .lblv { fill: var(--text); font-size: 9px; font-family: var(--mono); }
+  .chart-legend { display: flex; gap: 16px; font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .chart-legend .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+  .chart-legend .sw.b { background: var(--accent-2); }
+  .chart-legend .sw.r { background: var(--accent); }
+
+  /* ----- Merkle tree viewer ----- */
+  .tree-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  select.treeSelect {
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 10px 12px;
+    outline: none;
+    min-width: 280px;
+    max-width: 100%;
+  }
+  select.treeSelect:focus { border-color: var(--accent-2); }
+  .tree-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
+  .tree-meta .chip {
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--text);
+  }
+  .root-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11.5px; font-weight: 700;
+    border-radius: 999px; padding: 4px 11px;
+    border: 1px solid var(--line);
+  }
+  .root-badge.ok { color: var(--accent); border-color: rgba(54,211,153,.5); }
+  .root-badge.bad { color: var(--err); border-color: rgba(248,113,113,.5); }
+  .tree-scroll {
+    overflow: auto;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background:
+      radial-gradient(600px 300px at 50% -20%, #11202e 0%, var(--panel-2) 60%);
+    margin-top: 14px;
+    max-height: 620px;
+  }
+  .tree-svg { display: block; }
+  .tree-svg .edge { stroke: var(--line); stroke-width: 1.2; }
+  .tree-svg .node-rect { fill: var(--panel); stroke: var(--line); stroke-width: 1; }
+  .tree-svg .node-rect.root { fill: #143a2c; stroke: var(--accent); stroke-width: 1.5; }
+  .tree-svg .node-rect.leaf { fill: var(--panel-2); stroke: var(--accent-2); }
+  .tree-svg .node-rect:hover { stroke: var(--accent-2); stroke-width: 1.5; cursor: default; }
+  .tree-svg .node-txt { fill: var(--text); font-family: var(--mono); font-size: 10px; }
+  .tree-svg .node-txt.root { fill: var(--accent); font-weight: 700; }
+  .tree-svg .layer-lbl { fill: var(--muted); font-family: var(--mono); font-size: 9px; }
+  .tree-note { font-size: 11.5px; color: var(--warn); margin-top: 8px; }
 </style>
 </head>
 <body>
@@ -208,6 +336,14 @@
       <span id="modeText">mode: hashonly</span>
     </span>
   </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+    <button class="tab-btn" data-tab="hashtree">Hash Tree</button>
+  </nav>
+
+  <!-- ===================== DASHBOARD TAB ===================== -->
+  <div class="tab-panel active" id="panel-dashboard">
 
   <div class="toolbar">
     <button id="batchBtn" class="ghost">Run batch now</button>
@@ -258,6 +394,72 @@
       </table>
     </div>
   </section>
+
+  </div><!-- /panel-dashboard -->
+
+  <!-- ===================== HASH TREE TAB ===================== -->
+  <div class="tab-panel" id="panel-hashtree">
+
+    <div class="toolbar">
+      <button id="metricsRefreshBtn" class="ghost">Refresh metrics</button>
+      <div class="spacer"></div>
+      <span class="updated" id="metricsUpdated">—</span>
+    </div>
+
+    <!-- Metrics strip -->
+    <div class="grid-metrics" id="metricsStrip">
+      <div class="metric"><div class="k">Records</div><div class="v" id="m-records">—</div></div>
+      <div class="metric accent"><div class="k">Hashed</div><div class="v" id="m-hashed">—</div></div>
+      <div class="metric accent2"><div class="k">Anchor Batches</div><div class="v" id="m-batches">—</div></div>
+      <div class="metric"><div class="k">Stations</div><div class="v" id="m-stations">—</div></div>
+      <div class="metric"><div class="k">Avg Batch Size</div><div class="v" id="m-avgsize">—</div></div>
+      <div class="metric"><div class="k">Avg Tree Depth</div><div class="v" id="m-avgdepth">—</div></div>
+      <div class="metric"><div class="k">Pending</div><div class="v" id="m-pending">—</div></div>
+      <div class="metric"><div class="k">Last Batch</div><div class="v sm" id="m-lastbatch">—</div></div>
+    </div>
+
+    <!-- Charts -->
+    <section class="card">
+      <h2>Statistics</h2>
+      <p class="sub">Anchoring activity and structural distribution of Merkle batches.</p>
+      <div class="charts-grid">
+        <div class="chart-box full">
+          <p class="chart-title">Timeline — batches &amp; records per day (last ~14d, UTC)</p>
+          <div id="chartTimeline"><div class="empty">Loading…</div></div>
+          <div class="chart-legend">
+            <span><span class="sw b"></span>Batches</span>
+            <span><span class="sw r"></span>Records</span>
+          </div>
+        </div>
+        <div class="chart-box">
+          <p class="chart-title">Batch-size histogram</p>
+          <div id="chartBatchSize"><div class="empty">Loading…</div></div>
+        </div>
+        <div class="chart-box">
+          <p class="chart-title">Tree-depth histogram</p>
+          <div id="chartDepth"><div class="empty">Loading…</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Merkle tree viewer -->
+    <section class="card">
+      <h2>Merkle tree viewer</h2>
+      <p class="sub">Pick an anchor batch to rebuild and inspect its Merkle tree. Hover a node for its full hash.</p>
+      <div class="tree-controls">
+        <select id="treeSelect" class="treeSelect" aria-label="Select an anchor batch">
+          <option value="">Loading batches…</option>
+        </select>
+        <span id="rootBadge"></span>
+      </div>
+      <div class="tree-meta" id="treeMeta"></div>
+      <div class="tree-scroll" id="treeScroll">
+        <div class="empty" id="treeEmpty">Select a batch to view its Merkle tree.</div>
+      </div>
+      <div class="tree-note" id="treeNote" style="display:none"></div>
+    </section>
+
+  </div><!-- /panel-hashtree -->
 
   <footer>
     EdenCode Anchor · hash-only weather provenance · Merkle-anchored, no broadcast required
@@ -468,6 +670,422 @@
   $("verifyInput").addEventListener("keydown", function (e) { if (e.key === "Enter") verifyHash(this.value); });
   $("refreshBtn").addEventListener("click", refreshAll);
   $("batchBtn").addEventListener("click", runBatch);
+
+  // =========================================================================
+  // HASH TREE TAB
+  // =========================================================================
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var hashTreeLoaded = false;     // metrics + batch list loaded once on first open
+  var treeBatchesLoaded = false;
+
+  function svgEl(name, attrs) {
+    var e = document.createElementNS(SVGNS, name);
+    if (attrs) {
+      for (var k in attrs) {
+        if (Object.prototype.hasOwnProperty.call(attrs, k)) {
+          e.setAttribute(k, attrs[k]);
+        }
+      }
+    }
+    return e;
+  }
+  function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+  function fmtNum(n) {
+    if (n == null || isNaN(n)) return "—";
+    return Number(n).toLocaleString();
+  }
+  function round1(n) {
+    if (n == null || isNaN(n)) return "—";
+    return (Math.round(Number(n) * 10) / 10).toString();
+  }
+
+  // ----- Tabs -----
+  function activateTab(name) {
+    var btns = document.querySelectorAll("#tabs .tab-btn");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.toggle("active", btns[i].getAttribute("data-tab") === name);
+    }
+    var dash = $("panel-dashboard"), ht = $("panel-hashtree");
+    dash.classList.toggle("active", name === "dashboard");
+    ht.classList.toggle("active", name === "hashtree");
+    if (name === "hashtree" && !hashTreeLoaded) {
+      hashTreeLoaded = true;
+      loadMetrics();
+      loadTreeBatches();
+    }
+  }
+  $("tabs").addEventListener("click", function (ev) {
+    var b = ev.target.closest ? ev.target.closest(".tab-btn") : null;
+    if (b) activateTab(b.getAttribute("data-tab"));
+  });
+
+  // ----- Metrics + charts -----
+  async function loadMetrics() {
+    try {
+      var m = await getJSON("/api/metrics");
+      var t = m.totals || {};
+      $("m-records").textContent = fmtNum(t.records);
+      $("m-hashed").textContent = fmtNum(t.hashed);
+      $("m-batches").textContent = fmtNum(t.batches);
+      $("m-stations").textContent = fmtNum(t.stations);
+      $("m-pending").textContent = fmtNum(t.pending);
+      var bs = m.batchSize || {};
+      var td = m.treeDepth || {};
+      $("m-avgsize").textContent = round1(bs.avg);
+      $("m-avgdepth").textContent = round1(td.avg);
+      var latest = m.latest || {};
+      $("m-lastbatch").textContent = latest.lastBatchAt ? fmtTime(latest.lastBatchAt) : "—";
+
+      renderTimeline(m.timeline || []);
+      renderHistogram($("chartBatchSize"), m.batchSizeHistogram || [], "size", "Leaf count", "bar-hist");
+      renderHistogram($("chartDepth"), m.depthHistogram || [], "depth", "Depth", "bar-hist");
+      $("metricsUpdated").textContent = "Updated " + new Date().toLocaleTimeString();
+    } catch (e) {
+      ["m-records","m-hashed","m-batches","m-stations","m-pending","m-avgsize","m-avgdepth"].forEach(function (id) {
+        $(id).textContent = "!";
+      });
+      $("m-lastbatch").textContent = "—";
+      var msg = '<div class="empty">Failed to load metrics: ' + esc(e.message) + '</div>';
+      $("chartTimeline").innerHTML = msg;
+      $("chartBatchSize").innerHTML = msg;
+      $("chartDepth").innerHTML = msg;
+    }
+  }
+
+  // Grouped vertical bars: batches & records per day.
+  function renderTimeline(rows) {
+    var host = $("chartTimeline");
+    host.innerHTML = "";
+    if (!rows.length) { host.innerHTML = '<div class="empty">No activity yet.</div>'; return; }
+
+    var padL = 34, padR = 8, padT = 8, padB = 30;
+    var groupW = 46;
+    var W = padL + padR + rows.length * groupW;
+    var H = 180;
+    var plotH = H - padT - padB;
+    var maxV = 1;
+    rows.forEach(function (r) {
+      maxV = Math.max(maxV, Number(r.batches) || 0, Number(r.records) || 0);
+    });
+
+    var svg = svgEl("svg", { class: "chart-svg", width: W, height: H, viewBox: "0 0 " + W + " " + H });
+
+    // baseline axis
+    svg.appendChild(svgEl("line", { class: "ax", x1: padL, y1: padT + plotH, x2: W - padR, y2: padT + plotH }));
+    // a couple of y gridlines / labels
+    [0, 0.5, 1].forEach(function (f) {
+      var y = padT + plotH - f * plotH;
+      var v = Math.round(maxV * f);
+      var tl = svgEl("text", { class: "lbl", x: padL - 6, y: y + 3, "text-anchor": "end" });
+      tl.textContent = v;
+      svg.appendChild(tl);
+    });
+
+    var barW = 16, gap = 4;
+    rows.forEach(function (r, i) {
+      var gx = padL + i * groupW + (groupW - (barW * 2 + gap)) / 2;
+      var bVal = Number(r.batches) || 0;
+      var rVal = Number(r.records) || 0;
+      var bH = (bVal / maxV) * plotH;
+      var rH = (rVal / maxV) * plotH;
+      var by = padT + plotH - bH;
+      var ry = padT + plotH - rH;
+
+      var bRect = svgEl("rect", { class: "bar-batches", x: gx, y: by, width: barW, height: Math.max(0, bH), rx: 2 });
+      bRect.appendChild(titleEl((r.bucket || "") + " — batches: " + bVal));
+      svg.appendChild(bRect);
+
+      var rRect = svgEl("rect", { class: "bar-records", x: gx + barW + gap, y: ry, width: barW, height: Math.max(0, rH), rx: 2 });
+      rRect.appendChild(titleEl((r.bucket || "") + " — records: " + rVal));
+      svg.appendChild(rRect);
+
+      // x label: short bucket (MM-DD)
+      var lab = String(r.bucket || "");
+      var m = lab.match(/(\d{2})-(\d{2})$/);
+      var short = m ? (m[1] + "/" + m[2]) : lab.slice(5);
+      var tx = svgEl("text", { class: "lbl", x: gx + barW + gap / 2, y: H - 12, "text-anchor": "middle" });
+      tx.textContent = short;
+      svg.appendChild(tx);
+    });
+
+    host.appendChild(svg);
+  }
+
+  // Generic vertical-bar histogram. keyField = "size" | "depth".
+  function renderHistogram(host, rows, keyField, axisLabel, barClass) {
+    host.innerHTML = "";
+    if (!rows.length) { host.innerHTML = '<div class="empty">No data yet.</div>'; return; }
+
+    var padL = 30, padR = 8, padT = 8, padB = 30;
+    var slotW = Math.max(28, Math.min(60, 320 / rows.length));
+    var W = padL + padR + rows.length * slotW;
+    var H = 170;
+    var plotH = H - padT - padB;
+    var maxV = 1;
+    rows.forEach(function (r) { maxV = Math.max(maxV, Number(r.count) || 0); });
+
+    var svg = svgEl("svg", { class: "chart-svg", width: W, height: H, viewBox: "0 0 " + W + " " + H });
+    svg.appendChild(svgEl("line", { class: "ax", x1: padL, y1: padT + plotH, x2: W - padR, y2: padT + plotH }));
+    [0, 0.5, 1].forEach(function (f) {
+      var y = padT + plotH - f * plotH;
+      var tl = svgEl("text", { class: "lbl", x: padL - 6, y: y + 3, "text-anchor": "end" });
+      tl.textContent = Math.round(maxV * f);
+      svg.appendChild(tl);
+    });
+
+    var barW = Math.min(34, slotW - 8);
+    rows.forEach(function (r, i) {
+      var cnt = Number(r.count) || 0;
+      var key = r[keyField];
+      var h = (cnt / maxV) * plotH;
+      var x = padL + i * slotW + (slotW - barW) / 2;
+      var y = padT + plotH - h;
+      var rect = svgEl("rect", { class: barClass, x: x, y: y, width: barW, height: Math.max(0, h), rx: 2 });
+      rect.appendChild(titleEl(axisLabel + " " + key + ": " + cnt + " batch" + (cnt === 1 ? "" : "es")));
+      svg.appendChild(rect);
+      // value on top
+      if (cnt > 0) {
+        var vt = svgEl("text", { class: "lblv", x: x + barW / 2, y: y - 3, "text-anchor": "middle" });
+        vt.textContent = cnt;
+        svg.appendChild(vt);
+      }
+      // x label = key
+      var xt = svgEl("text", { class: "lbl", x: x + barW / 2, y: H - 12, "text-anchor": "middle" });
+      xt.textContent = key;
+      svg.appendChild(xt);
+    });
+
+    // axis caption
+    var cap = svgEl("text", { class: "lbl", x: padL, y: H - 1, "text-anchor": "start" });
+    cap.textContent = axisLabel;
+    svg.appendChild(cap);
+
+    host.appendChild(svg);
+  }
+
+  function titleEl(text) {
+    var t = svgEl("title");
+    t.textContent = text;
+    return t;
+  }
+
+  // ----- Merkle tree viewer -----
+  async function loadTreeBatches() {
+    var sel = $("treeSelect");
+    try {
+      var rows = await getJSON("/api/anchors?limit=25");
+      treeBatchesLoaded = true;
+      if (!rows || !rows.length) {
+        sel.innerHTML = '<option value="">No anchor batches yet</option>';
+        return;
+      }
+      sel.innerHTML = rows.map(function (b) {
+        var label = "batch #" + b.id + " · " + b.leaf_count + " leaves · root " +
+          (b.merkle_root ? String(b.merkle_root).slice(0, 6) + "…" : "—");
+        return '<option value="' + esc(b.id) + '">' + esc(label) + '</option>';
+      }).join("");
+      // default to most recent (first row from listBatches is newest)
+      sel.value = String(rows[0].id);
+      loadTree(rows[0].id);
+    } catch (e) {
+      sel.innerHTML = '<option value="">Failed to load batches</option>';
+      $("treeEmpty").textContent = "Failed to load batches: " + e.message;
+    }
+  }
+
+  $("treeSelect").addEventListener("change", function () {
+    if (this.value) loadTree(this.value);
+  });
+
+  async function loadTree(id) {
+    var scroll = $("treeScroll");
+    var note = $("treeNote");
+    var meta = $("treeMeta");
+    var badge = $("rootBadge");
+    clear(scroll);
+    note.style.display = "none";
+    var loading = document.createElement("div");
+    loading.className = "empty";
+    loading.textContent = "Rebuilding Merkle tree…";
+    scroll.appendChild(loading);
+
+    try {
+      var t = await getJSON("/api/anchors/" + encodeURIComponent(id) + "/tree");
+      // Root-match badge
+      if (t.rootMatches) {
+        badge.innerHTML = '<span class="root-badge ok">✓ verified</span>';
+      } else {
+        badge.innerHTML = '<span class="root-badge bad">✗ mismatch</span>';
+      }
+      // Meta chips
+      meta.innerHTML =
+        '<span class="chip">batch #' + esc(t.batchId) + '</span>' +
+        '<span class="chip">' + esc(t.leafCount) + ' leaves</span>' +
+        '<span class="chip">depth ' + esc(t.depth) + '</span>' +
+        '<span class="chip">' + esc(t.algo || "sha256") + '</span>' +
+        '<span class="chip">' + esc(t.anchorMode || "hashonly") + '</span>' +
+        (t.bsvTxid ? '<span class="chip">txid ' + esc(shortHash(t.bsvTxid)) + '</span>' : '') +
+        '<span class="chip" title="' + esc(t.merkleRoot) + '">root ' + esc(shortHash(t.merkleRoot)) + '</span>';
+
+      renderTree(scroll, t, note);
+    } catch (e) {
+      clear(scroll);
+      var err = document.createElement("div");
+      err.className = "empty";
+      err.textContent = (e.message && /404|not found/i.test(e.message))
+        ? "Batch not found."
+        : ("Failed to load tree: " + e.message);
+      scroll.appendChild(err);
+      badge.innerHTML = "";
+      meta.innerHTML = "";
+    }
+  }
+
+  function renderTree(scroll, t, note) {
+    clear(scroll);
+    var layers = t.layers || [];
+    if (!layers.length) {
+      var em = document.createElement("div");
+      em.className = "empty";
+      em.textContent = "No layers to render.";
+      scroll.appendChild(em);
+      return;
+    }
+
+    var leaves = t.leaves || [];
+    var leafMeta = {};
+    leaves.forEach(function (lf) { leafMeta[lf.leafIndex] = lf; });
+
+    // layers[0] = leaf hashes (widest), last = [root].
+    var widest = 0;
+    layers.forEach(function (lay) { widest = Math.max(widest, lay.length); });
+
+    var large = (t.leafCount || 0) > 64;
+    // node box dims
+    var nodeW = large ? 56 : 74;
+    var nodeH = large ? 20 : 26;
+    var hGapMin = large ? 6 : 14;   // min horizontal gap between node boxes
+    var vGap = large ? 48 : 64;     // vertical gap between layer centers
+    var padX = 24, padY = 26;
+    var labelW = 30;                // left gutter for layer labels
+
+    var slot = nodeW + hGapMin;
+    var plotW = widest * slot;
+    var W = padX * 2 + labelW + Math.max(plotW, nodeW);
+    var nLayers = layers.length;
+    var H = padY * 2 + (nLayers - 1) * vGap + nodeH;
+
+    var svg = svgEl("svg", {
+      class: "tree-svg",
+      width: W, height: H, viewBox: "0 0 " + W + " " + H
+    });
+
+    var contentLeft = padX + labelW;
+    var contentW = Math.max(plotW, nodeW);
+
+    // Compute center x of node j within a layer of length len, spread evenly across contentW.
+    function centerX(j, len) {
+      if (len <= 1) return contentLeft + contentW / 2;
+      // evenly distribute node centers across the content width
+      var span = contentW - nodeW;
+      return contentLeft + nodeW / 2 + (span * j) / (len - 1);
+    }
+    // top layer (root) is last index; we draw root at top => layer index L drawn at row (nLayers-1 - L)
+    function rowY(layerIdx) {
+      var row = (nLayers - 1) - layerIdx; // root(layerIdx=last) -> row 0 (top)
+      return padY + row * vGap;
+    }
+
+    // 1) edges first (parent layer L+1 connects to children 2j, 2j+1 in layer L)
+    for (var L = 0; L < nLayers - 1; L++) {
+      var child = layers[L];
+      var parent = layers[L + 1];
+      var childY = rowY(L);
+      var parentY = rowY(L + 1);
+      for (var p = 0; p < parent.length; p++) {
+        var px = centerX(p, parent.length);
+        var pyBottom = parentY + nodeH; // parent sits above; line from its bottom
+        var c1 = 2 * p, c2 = 2 * p + 1;
+        [c1, c2].forEach(function (ci) {
+          if (ci < child.length) {
+            var cx = centerX(ci, child.length);
+            var line = svgEl("line", {
+              class: "edge",
+              x1: px, y1: pyBottom,
+              x2: cx, y2: childY
+            });
+            svg.appendChild(line);
+          }
+        });
+      }
+    }
+
+    // 2) nodes
+    for (var Li = 0; Li < nLayers; Li++) {
+      var lay = layers[Li];
+      var y = rowY(Li);
+      var isLeafLayer = (Li === 0);
+      var isRootLayer = (Li === nLayers - 1);
+      // layer label on the left gutter
+      var llbl = svgEl("text", {
+        class: "layer-lbl",
+        x: 4, y: y + nodeH / 2 + 3, "text-anchor": "start"
+      });
+      llbl.textContent = isRootLayer ? "root" : (isLeafLayer ? "leaf" : ("L" + Li));
+      svg.appendChild(llbl);
+
+      for (var j = 0; j < lay.length; j++) {
+        var hash = lay[j];
+        var cx2 = centerX(j, lay.length);
+        var x = cx2 - nodeW / 2;
+        var cls = "node-rect" + (isRootLayer ? " root" : (isLeafLayer ? " leaf" : ""));
+        var rect = svgEl("rect", {
+          class: cls, x: x, y: y, width: nodeW, height: nodeH, rx: 6
+        });
+        // tooltip
+        var tip = String(hash);
+        if (isLeafLayer && leafMeta[j]) {
+          var lm = leafMeta[j];
+          tip = "leaf #" + j + "\n" + hash +
+            "\nrecordId: " + lm.recordId +
+            "\nstationId: " + (lm.stationId == null ? "—" : lm.stationId) +
+            "\nobservedAt: " + (lm.observedAt || "—");
+        } else if (isRootLayer) {
+          tip = "Merkle root\n" + hash;
+        }
+        rect.appendChild(titleEl(tip));
+        svg.appendChild(rect);
+
+        var txt = svgEl("text", {
+          class: "node-txt" + (isRootLayer ? " root" : ""),
+          x: cx2, y: y + nodeH / 2 + 3.5, "text-anchor": "middle"
+        });
+        txt.textContent = String(hash).slice(0, 8);
+        // ensure tooltip also reachable via text hover
+        txt.appendChild(titleEl(tip));
+        svg.appendChild(txt);
+      }
+    }
+
+    scroll.appendChild(svg);
+
+    // notes for edge cases
+    if (t.leafCount === 1) {
+      note.style.display = "block";
+      note.textContent = "Single-leaf batch: the Merkle root equals the only leaf hash.";
+    } else if (large) {
+      note.style.display = "block";
+      note.textContent = "Large tree (" + t.leafCount + " leaves) — node spacing compressed; hover any node for its full hash. Scroll to pan.";
+    } else {
+      note.style.display = "none";
+    }
+  }
+
+  $("metricsRefreshBtn").addEventListener("click", function () {
+    loadMetrics();
+    var sel = $("treeSelect");
+    if (sel.value) loadTree(sel.value); else loadTreeBatches();
+  });
 
   refreshAll();
   setInterval(refreshAll, 15000);

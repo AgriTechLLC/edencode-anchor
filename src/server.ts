@@ -14,7 +14,7 @@ import {
   getBatchLeaves,
   getMetrics,
 } from './db/repo';
-import { buildMerkle } from './anchor/merkle';
+import { buildMerkle, merkleProof, verifyProof } from './anchor/merkle';
 import { runHashBatch, startHashLoop } from './anchor/hash-processor';
 
 const app = express();
@@ -156,11 +156,51 @@ app.get(
     }
     const { record, batch } = await findByHash(hash);
     if (record) {
+      const merkleRoot = batch ? batch.merkle_root : null;
+
+      // Rebuild the batch's Merkle tree from its leaves (ordered by leaf_index)
+      // exactly like the /tree endpoint, then derive the leaf's authentication
+      // path so the caller can independently verify membership in merkleRoot.
+      let batchId: number | null = null;
+      let leafIndex: number | null = null;
+      let proof: Array<{ hash: string; position: 'left' | 'right' }> = [];
+      let proofValid = false;
+
+      if (batch && record.batch_id !== null && record.batch_id !== undefined) {
+        batchId = Number(record.batch_id);
+
+        const leaves = await getBatchLeaves(batchId);
+        const leafHashes = leaves.map((l) => l.hash);
+        const { layers } = buildMerkle(leafHashes);
+
+        // Locate this record's leaf within the rebuilt (leaf_index-ordered)
+        // array. Prefer the record's stored leaf_index, but fall back to the
+        // hash position so the proof is correct even if leaf_index is stale.
+        let idx = leaves.findIndex((l) => l.recordId === Number(record.id));
+        if (idx < 0) {
+          idx = leafHashes.indexOf(record.record_hash);
+        }
+
+        if (idx >= 0) {
+          leafIndex = idx;
+          proof = merkleProof(layers, idx);
+          proofValid = verifyProof(
+            record.record_hash,
+            proof,
+            merkleRoot ?? ''
+          );
+        }
+      }
+
       res.json({
         verified: true,
         record,
         batch,
-        merkleRoot: batch ? batch.merkle_root : null,
+        merkleRoot,
+        batchId,
+        leafIndex,
+        proof,
+        proofValid,
       });
       return;
     }
